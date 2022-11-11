@@ -1,0 +1,61 @@
+﻿@using System.ComponentModel
+
+<div>    
+    @if (IsLoading && Tasks is null)
+    {
+        <h5>Loading...</h5>
+    }
+    else if (Tasks is null)
+    {
+        <h5>No tasks available...</h5>
+    }
+    else
+    {
+        <table class="w-100 task-table">
+            <thead>
+                <tr>
+                    <th colspan="2" width="30%"><h4 style="color: @(AccentColor);">@Title</h4></th>
+                    <th width="15%" style="text-align:center">Status</th>
+                    <th width="7%" style="text-align:center">Owner</th>
+                    <th width="15%" style="text-align:center">Priority</th>
+                    <th width="20%" style="text-align:center">Timeline</th>
+                    <th width="10%" style="text-align:center">Dates</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var task in Tasks)
+                {
+                    <tr>
+                        <td><div style="background-color: @AccentColor;"></div></td>
+                        <td>@task.Name</td>
+                        <td align="center" style="background-color: @task.Status?.Color; color: white;">@task.Status.Name</td>
+                        <td align="center">Unassigned</td>
+                        <td align="center" style="background-color: @task.Priority?.Color; color: white;">@task.Priority.Name</td>
+                        <td align="center"><progress value="@GetProgress(task)" /></td>
+                        <td align="center">@task.Created.ToString("MMM d") - @task.Due?.ToString("MMM d")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string Title { get; set; } = "No title";
+
+    [Parameter]
+    public IEnumerable<TaskEntry>? Tasks { get; set; }
+
+    [Parameter]
+    public string AccentColor { get; set; } = "hsl(265, 80%, 60%)";
+
+    [Parameter]
+    public bool IsLoading { get; set; } = false;
+
+    double GetProgress(TaskEntry task){
+        var totalDays = (task.Due - task.Created)?.TotalDays;
+        var passedDays = (DateTime.Now - task.Created).TotalDays;
+        return passedDays / totalDays ?? 0;
+    }
+}

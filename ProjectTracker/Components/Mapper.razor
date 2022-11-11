@@ -1,0 +1,19 @@
+﻿
+<hr class="my-2" />
+<div class="mapper position-relative" @onmouseup="OnMouseUp">
+    @if (Entry is not null && Entry.X > 0 && Entry.Y > 0)
+    {
+        <div class="mapper-point position-absolute" style="top: @(Entry.Y)px; left: @(Entry.X)px;"></div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public PunchlistEntry? Entry { get; set; }
+
+    void OnMouseUp(MouseEventArgs e){
+        if(Entry is null) return;
+        Entry.X = e.OffsetX - 5;
+        Entry.Y = e.OffsetY - 5;
+    }
+}

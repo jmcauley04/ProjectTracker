@@ -1,0 +1,34 @@
+﻿<div class="d-grid">
+    <hr class="my-2" />
+    <table class="history-table">
+        <thead>
+            <tr>
+                <th>User</th>
+                <th>Timestamp</th>
+                <th>Description</th>
+                <th>Old</th>
+                <th>New</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Logs is not null)
+            {
+                @foreach (var log in Logs)
+                {
+                    <tr>
+                        <td>@log.User</td>
+                        <td>@log.Timestamp</td>
+                        <td>@log.Description</td>
+                        <td>@log.Old</td>
+                        <td>@log.New</td>
+                    </tr>
+                }
+            }            
+        </tbody>
+    </table>    
+</div>
+
+@code {
+    [Parameter]
+    public IEnumerable<HistoryLog>? Logs { get; set; }
+}

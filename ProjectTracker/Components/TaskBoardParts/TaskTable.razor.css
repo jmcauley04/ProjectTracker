@@ -1,0 +1,28 @@
+﻿.task-table td {
+    background-color: #eee;
+    border: .3em solid white;
+    padding: .5em 1em;
+}
+
+.task-table progress {
+    height: 2em;
+    margin: -.7em 0;
+    width: 200px;
+}
+
+.task-table tr td:first-child {
+    padding: 0;
+    width: 5px;
+    border-right: none !important;
+}
+
+    .task-table tr td:first-child > div {
+        padding: 0;
+        height: 2.6em;
+        width: 5px;
+        border-right: none !important;
+    }
+
+.task-table tr td:nth-child(2) {
+    border-left: none !important;
+}

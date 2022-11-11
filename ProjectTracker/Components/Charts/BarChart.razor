@@ -1,0 +1,27 @@
+﻿
+<div class="d-flex gap-5 align-items-end small">
+    @if (Data is not null)
+    {
+        foreach(var kvp in Data){
+            <div class="d-grid align-items-end align-content-end justify-content-center text-center" style="justify-items:center;">
+                <div 
+                    class="d-grid align-content-between justify-content-center text-light"
+                    style="height: @(kvp.Value * 1.0 / MaxValue * _height)px; background-color: @(_color); width: 50px;">
+                    <p class="m-0 p-0">@kvp.Value</p>
+                </div>
+                <p class="m-0 p-0">@kvp.Key</p>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    int _height = 90;
+    string _color = "hsl(200, 40%, 40%)";
+
+    [Parameter]
+    public Dictionary<string, int>? Data { get; set; }
+
+    [Parameter]
+    public int MaxValue { get; set; }
+}

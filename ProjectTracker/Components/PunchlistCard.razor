@@ -1,0 +1,185 @@
+﻿@using ProjectTracker.Components.PunchlistParts
+@using ProjectTracker.Shared.Models.Abstractions
+@inject PunchlistService PunchlistService
+@inject OptionsService OptionsService
+
+<div class="punchlist-card" style="border-top: 3px solid @Entry?.Priority.GetColor(_priorities);">
+    @if (Entry is null)
+    {
+        <h3>Loading...</h3>
+    }
+    else
+    {
+        <div class="d-grid">
+            <div class="d-flex align-items-center m-2 gap-5">
+                @if(Entry.Id == 0)
+                {
+                    <input class="flex-grow-1 px-2" @bind-value="Entry.Name" placeholder="Title" />
+                }
+                else
+                {                    
+                    <h5 class="flex-grow-1">@Entry.Id @Entry.Name</h5>
+                }
+                <h6 class="text-muted">@Entry.Created.ToString("MMM d yyyy")</h6>
+            </div>
+            <div class="d-flex gap-4 bg-light p-3 py-4 options-pane justify-content-around" style="font-size: .8em;">
+                <label>
+                    Priority
+                    <select style="background-color: @Entry?.Priority.GetColor(_priorities)" @onchange="(a) => SetState(a, _priorities, SetPriority)">
+                        @if(_priorities is not null)
+                        {                            
+                            @foreach(var priority in _priorities)
+                            {
+                                <option value="@priority.Id" selected="@(priority.Id == Entry.PriorityId)">@priority.Name</option>
+                            }
+                        }
+                    </select>
+                </label>
+                <label>
+                    Owner
+                    <select style="background-color: @Entry?.Owner.GetColor(_owners)" @onchange="(a) => SetState(a, _owners, SetOwner)">
+                        @if (_owners is not null)
+                        {
+                            @foreach (var owner in _owners)
+                            {
+                                <option value="@owner.Id" selected="@(owner.Id == Entry.OwnerId)">@owner.Name</option>
+                            }
+                        }
+                    </select>
+                </label>
+                <label>
+                    Flag
+                    <select style="background-color: @Entry?.Flag.GetColor(_flags)" @onchange="(a) => SetState(a, _flags, SetFlag)">
+                        @if (_flags is not null)
+                        {
+                            @foreach (var flag in _flags)
+                            {
+                                <option value="@flag.Id" selected="@(flag.Id == Entry.FlagId)">@flag.Name</option>
+                            }
+                        }
+                    </select>
+                </label>
+                <label>
+                    Status
+                    <select style="background-color: @Entry?.Status.GetColor(_statuses);" @onchange="(a) => SetState(a, _statuses, SetStatus)">
+                        @if (_statuses is not null)
+                        {
+                            @foreach (var status in _statuses)
+                            {
+                                <option value="@status.Id" selected="@(status.Id == Entry.StatusId)">@status.Name</option>
+                            }
+                        }
+                    </select>
+                </label>
+            </div>
+            <div class="d-flex gap-5 px-3 mt-2">
+                @foreach (var tab in Enum.GetValues<Tab>())
+                {
+                    <strong @onclick="() => _tab = tab" class="@(tab == _tab ? "link-like selected" : "link-like text-muted")">@tab</strong>
+                }
+            </div>
+            <div class="d-grid pb-3 px-3 pt-1">
+                @switch(_tab){
+                    case Tab.Issue:
+                        <TextAndImage @bind-Text="Entry.Description" @bind-Image="Entry.BeforeImage" Filename="@($"{Entry.Id}_Issue")" />
+                        break;
+                    case Tab.Resolution:
+                        <TextAndImage @bind-Text="Entry.Resolution" @bind-Image="Entry.AfterImage" Filename="@($"{Entry.Id}_Resolution")" />
+                        break;
+                    case Tab.Map:
+                        <Mapper Entry="@Entry" />
+                        break;
+
+                    case Tab.History:
+                        <History />
+                        break;
+                }
+            </div>
+            <div class="p-3">
+                <div class="d-flex justify-content-between">
+                    <strong>Discussion</strong>
+                    <button class="btn btn-secondary">Save</button>
+                </div>
+                <hr class="my-2" />
+                <div class="d-flex gap-2">
+                    <span class="m-2">M</span>
+                    <textarea class="flex-grow-1 p-2" placeholder="Add a comment to this item"></textarea>
+                </div>
+                @foreach (var comment in _comments)
+                {
+                    <div class="d-grid justify-content-end">
+                        <span class="text-muted">@comment.Created.ToShortDateString()</span>
+                        <div class="d-flex gap-2">
+                            <span class="m-2">@comment.User</span>
+                            <textarea class="flex-grow-1 p-2" readonly placeholder="@comment.Text"></textarea>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    IEnumerable<PunchlistPriority>? _priorities;
+    IEnumerable<PunchlistStatus>? _statuses;
+    IEnumerable<PunchlistFlag>? _flags;
+    IEnumerable<PunchlistOwner>? _owners;
+    List<Comment> _comments = new();
+
+    enum Tab {
+        Issue,
+        Resolution,
+        Map,
+        History
+    }
+
+    Tab _tab = Tab.Issue;
+
+    [Parameter]
+    public PunchlistEntry? Entry { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _priorities = await OptionsService.GetPriorities();
+        _statuses = await OptionsService.GetStatuses();
+        _flags = await OptionsService.GetFlags();
+        _owners = await OptionsService.GetOwners();
+    }
+
+    void SetState<T>(ChangeEventArgs args, IEnumerable<T>? items, Action<T?> setter) 
+        where T : BaseSelectBoxEntry
+    {
+        var id = args.Value.AsInt();
+        var state = items?.SingleOrDefault(x => x.Id == id);
+        setter(state);
+    }
+
+    void SetPriority(PunchlistPriority? state)
+    {
+        if (Entry is null) return;
+        Entry.PriorityId = state?.Id ?? 0;
+        Entry.Priority = state;
+    }
+
+    void SetStatus(PunchlistStatus? state)
+    {
+        if (Entry is null) return;
+        Entry.StatusId = state?.Id ?? 0;
+        Entry.Status = state;
+    }
+
+    void SetOwner(PunchlistOwner? state)
+    {
+        if (Entry is null) return;
+        Entry.OwnerId = state?.Id ?? 0;
+        Entry.Owner = state;
+    }
+
+    void SetFlag(PunchlistFlag? state)
+    {
+        if (Entry is null) return;
+        Entry.FlagId = state?.Id ?? 0;
+        Entry.Flag = state;
+    }
+}

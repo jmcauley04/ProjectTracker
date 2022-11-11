@@ -1,0 +1,67 @@
+﻿@inject IConfiguration Config
+
+<div>
+    <hr class="my-2" />
+    <div class="d-flex gap-4">
+        <textarea class="flex-grow-1 p-2" rows="10" @onchange="OnTextChanged">
+            @Text
+        </textarea>
+        <div class="d-grid gap-1">
+            @if(Image is null)
+            {
+                <div class="no-image">No Image</div>
+                <InputFile OnChange="AddImage" accept="image/png, image/jpeg, image/gif" />
+            }
+            else
+            {
+                <img src="/ImageStore/@Image" alt="image of issue" />
+                <button class="btn btn-secondary" @onclick="RemoveImage">Remove Image</button>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public string Filename { get; set; }
+
+    [Parameter]
+    public string Text { get; set; } = string.Empty;
+
+    [Parameter]
+    public EventCallback<string> TextChanged { get; set; }
+
+    [Parameter]
+    public string? Image { get; set; }
+
+    [Parameter]
+    public EventCallback<string?> ImageChanged { get; set; }
+
+    async Task OnTextChanged(ChangeEventArgs args){
+        var text = args.Value?.ToString() ?? string.Empty;
+        if (TextChanged.HasDelegate)
+            await TextChanged.InvokeAsync(text);
+        else Text = text;
+    }
+
+    async Task RemoveImage()
+    {
+        await ImageChanged.InvokeAsync(null);
+        Image = null;
+    }
+
+    async Task AddImage(InputFileChangeEventArgs args)
+    {
+        //TODO: Refactor this
+        var path = Config.GetValue<string>("ImageStore");
+        Directory.CreateDirectory(path);
+        var file = args.File;
+        var fileName = $"{Filename}.{file.Name.Split('.').Last()}";
+        var fullPath = Path.Combine(path, $"{Filename}.{file.Name.Split('.').Last()}");
+        var resizedFile = await file.RequestImageFileAsync(file.ContentType, 480, 640);
+        await using FileStream fs = new(fullPath, FileMode.Create);
+        await resizedFile.OpenReadStream().CopyToAsync(fs);
+        await ImageChanged.InvokeAsync(fileName);
+    }
+}
