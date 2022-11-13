@@ -1,4 +1,4 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
 @inject UserService UserService
 
 <PageTitle>Project Tracker</PageTitle>
@@ -9,30 +9,12 @@
     </div>
 
     <main>
-        @if(_username is null)
-        {
-            <div class="top-row px-4">
-                Hello!
-            </div>
-        }
-        else
-        {
-            <div class="top-row px-4">
-                Hello, @_username!
-            </div>
-        }
+        <div class="top-row px-4">
+            <LoginDisplay />
+        </div>
 
         <article class="content px-4">
             @Body
         </article>
     </main>
 </div>
-
-@code {
-    string? _username;
-
-    protected override async Task OnInitializedAsync()
-    {
-        _username = await UserService.GetUsername();
-    }
-}

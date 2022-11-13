@@ -1,14 +1,30 @@
 global using ProjectTracker.Controllers;
 global using ProjectTracker.DataAccess;
 global using ProjectTracker.Services;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Identity.Web;
+using Microsoft.Identity.Web.UI;
 using ProjectTracker.Shared;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
+.AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAd"));
+
+builder.Services.AddControllersWithViews()
+.AddMicrosoftIdentityUI();
+
+builder.Services.AddAuthorization(options =>
+
+{
+    options.FallbackPolicy = options.DefaultPolicy;
+});
+
 // Add services to the container.
 builder.Services.AddRazorPages();
-builder.Services.AddServerSideBlazor();
+builder.Services.AddServerSideBlazor()
+    .AddMicrosoftIdentityConsentHandler();
 
 builder.Services.AddDataAccess(builder.Configuration);
 builder.Services.AddClientServices();
@@ -28,7 +44,6 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 var imageStorePath = builder.Configuration.GetValue<string>("ImageStore");
-Directory.CreateDirectory(imageStorePath);
 
 app.UseStaticFiles(new StaticFileOptions
 {
@@ -37,6 +52,12 @@ app.UseStaticFiles(new StaticFileOptions
 });
 
 app.UseRouting();
+
+app.UseAuthentication();
+
+app.UseAuthorization();
+
+app.MapControllers();
 
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");

@@ -1,0 +1,19 @@
+@inject UserService UserService
+<AuthorizeView>
+    <Authorized>
+        Hello, @_username
+        <a href="MicrosoftIdentity/Account/SignOut">Log out</a>
+    </Authorized>
+    <NotAuthorized>
+        <a href="MicrosoftIdentity/Account/SignIn">Log in</a>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    string _username = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _username = await UserService.GetDisplayname();
+    }
+}

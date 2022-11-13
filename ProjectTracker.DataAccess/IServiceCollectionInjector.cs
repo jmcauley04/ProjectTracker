@@ -10,8 +10,15 @@ public static class IServiceCollectionInjector
 {
     public static IServiceCollection AddDataAccess(this IServiceCollection services, IConfiguration configuration)
     {
+
+#if RELEASE
+        var connStr = Environment.GetEnvironmentVariable("connectionstring");
+#else
+        var connStr = configuration.GetConnectionString("ProjectTracker");
+#endif
+
         services.AddDbContext<ProjectTrackerContext>(options =>
-            options.UseSqlServer(configuration.GetConnectionString("ProjectTracker")));
+            options.UseSqlServer(connStr));
 
         services.AddDbContextFactory<ProjectTrackerContext>(lifetime: ServiceLifetime.Scoped);
         services.AddMemoryCache();
