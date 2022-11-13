@@ -1,7 +1,6 @@
 ﻿#nullable disable
 using Microsoft.EntityFrameworkCore;
 using ProjectTracker.Shared.Models;
-using ProjectTracker.Shared.Models.Comments;
 using ProjectTracker.Shared.Models.Punchlist;
 using ProjectTracker.Shared.Models.TaskBoard;
 
@@ -9,8 +8,6 @@ namespace ProjectTracker.DataAccess.Contexts;
 
 public class ProjectTrackerContext : DbContext
 {
-    internal DbSet<Comment> Comments { get; set; }
-
     #region Punchlist
     internal DbSet<PunchlistEntry> PunchlistEntries { get; set; }
     internal DbSet<PunchlistPriority> PunchlistPriorities { get; set; }
@@ -24,8 +21,11 @@ public class ProjectTrackerContext : DbContext
     internal DbSet<TaskPriority> TaskPriorities { get; set; }
     internal DbSet<Shared.Models.TaskBoard.TaskStatus> TaskStatuses { get; set; }
     #endregion
-    #region History
+
+    #region Related
     internal DbSet<HistoryLog> HistoryLogs { get; set; }
+    internal DbSet<Comment> Comments { get; set; }
+    internal DbSet<RelationType> RelationTypes { get; set; }
     #endregion
 
     public ProjectTrackerContext(DbContextOptions<ProjectTrackerContext> options) : base(options)

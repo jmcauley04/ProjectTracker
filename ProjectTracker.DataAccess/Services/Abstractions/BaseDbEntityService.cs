@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.IdentityModel.Tokens;
 using System.Linq.Expressions;
 
 namespace ProjectTracker.DataAccess.Services.Abstractions;
@@ -53,6 +54,16 @@ public abstract class BaseDbEntityService<TContext, TEntity> : BaseDbContextServ
         });
     }
 
+    public async Task<IEnumerable<TEntity>> Create(IEnumerable<TEntity> entities)
+    {
+        return await WriteWithLogging(async (ctx) =>
+        {
+            if (entities.IsNullOrEmpty()) throw new ArgumentNullException(nameof(entities));
+            ctx.AddRange(entities);
+            return await Task.FromResult(entities);
+        });
+    }
+
     public async Task<TEntity> Create(TEntity entity)
     {
         return await WriteWithLogging(async (ctx) =>
@@ -80,6 +91,16 @@ public abstract class BaseDbEntityService<TContext, TEntity> : BaseDbContextServ
             if (entity is null) throw new ArgumentNullException(nameof(entity));
             ctx.Update(entity);
             return await Task.FromResult(entity);
+        });
+    }
+
+    public async Task<IEnumerable<TEntity>> Update(IEnumerable<TEntity> entities)
+    {
+        return await WriteWithLogging(async (ctx) =>
+        {
+            if (entities.IsNullOrEmpty()) throw new ArgumentNullException(nameof(entities));
+            ctx.UpdateRange(entities);
+            return await Task.FromResult(entities);
         });
     }
 }

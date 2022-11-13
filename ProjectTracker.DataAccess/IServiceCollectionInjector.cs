@@ -20,6 +20,7 @@ public static class IServiceCollectionInjector
         services.AddScoped<PunchlistService>();
         services.AddScoped<OptionsService>();
         services.AddScoped<HistoryLogService>();
+        services.AddScoped<CommentService>();
 
         return services;
     }

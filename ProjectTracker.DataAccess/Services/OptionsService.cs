@@ -21,5 +21,6 @@ namespace ProjectTracker.DataAccess.Services
         public async Task<List<PunchlistOwner>> GetOwners() => await GetOptions<PunchlistOwner>("GetOwners");
         public async Task<List<PunchlistFlag>> GetFlags() => await GetOptions<PunchlistFlag>("GetFlags");
         public async Task<List<RelationType>> GetRelations() => await GetOptions<RelationType>("GetRelations");
+        public async Task<RelationType> GetRelation(string relation) => (await GetRelations()).Single(x => x.Name == relation);
     }
 }

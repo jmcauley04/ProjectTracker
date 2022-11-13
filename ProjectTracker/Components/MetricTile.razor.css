@@ -1,0 +1,17 @@
+﻿.metric-tile {
+    display: grid;
+    place-items: center;
+    place-content: center;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 1em;
+    box-shadow: var(--my-shadow);
+}
+
+    .metric-tile span:first-child {
+        font-size: 3em;
+    }
+
+    .metric-tile span:last-child {
+        color: #999;
+    }

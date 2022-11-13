@@ -1,30 +1,30 @@
 ﻿@inject IConfiguration Config
+@inject FileService FileService
 
 <div>
     <hr class="my-2" />
     <div class="d-flex gap-4">
-        <textarea class="flex-grow-1 p-2" rows="10" @onchange="OnTextChanged">
+        <textarea class="flex-grow-1 p-2" rows="10" @onchange="OnTextChanged" disabled="@Disabled">
             @Text
         </textarea>
         <div class="d-grid gap-1">
             @if(Image is null)
             {
                 <div class="no-image">No Image</div>
-                <InputFile OnChange="AddImage" accept="image/png, image/jpeg, image/gif" />
+                <InputFile OnChange="AddImage" accept="image/png, image/jpeg, image/gif" disabled="@Disabled" />
             }
             else
             {
                 <img src="/ImageStore/@Image" alt="image of issue" />
-                <button class="btn btn-secondary" @onclick="RemoveImage">Remove Image</button>
+                <button class="btn btn-secondary" @onclick="RemoveImage" disabled="@Disabled">Remove Image</button>
             }
         </div>
     </div>
 </div>
 
 @code {
-
     [Parameter]
-    public string Filename { get; set; }
+    public bool Disabled { get; set; }
 
     [Parameter]
     public string Text { get; set; } = string.Empty;
@@ -53,15 +53,7 @@
 
     async Task AddImage(InputFileChangeEventArgs args)
     {
-        //TODO: Refactor this
-        var path = Config.GetValue<string>("ImageStore");
-        Directory.CreateDirectory(path);
-        var file = args.File;
-        var fileName = $"{Filename}.{file.Name.Split('.').Last()}";
-        var fullPath = Path.Combine(path, $"{Filename}.{file.Name.Split('.').Last()}");
-        var resizedFile = await file.RequestImageFileAsync(file.ContentType, 480, 640);
-        await using FileStream fs = new(fullPath, FileMode.Create);
-        await resizedFile.OpenReadStream().CopyToAsync(fs);
+        var fileName = await FileService.SaveImage(args.File);
         await ImageChanged.InvokeAsync(fileName);
     }
 }

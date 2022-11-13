@@ -1,5 +1,9 @@
 @import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
 
+:root {
+    --my-shadow: #ccc 1px 1px 6px;
+}
+
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
@@ -7,6 +11,12 @@ html, body {
 h1, h2, h3, h4, h5, h6 {
     margin: 0;
     padding: 0;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
 h1:focus {
@@ -107,7 +117,19 @@ a, .btn-link {
 
 .punchlist-card {
     box-shadow: #ccc 1px 1px 6px;
+    border-radius: 10px;
+    transition: box-shadow .2s, transform .2s;
+    transform: scale(.99, .99);
 }
+
+    .punchlist-card:hover {
+        box-shadow: 1px 1px 5px black;
+        transform: scale(1, 1);
+    }
+
+    .punchlist-card .banner {
+        background-color: #eee;
+    }
 
     .punchlist-card img,
     .punchlist-card .no-image {
@@ -137,6 +159,29 @@ a, .btn-link {
         align-items: center;
     }
 
+
+.stamp {
+    border-width: 5px;
+    border-style: solid;
+    padding: 0 .5em;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    gap: 1em;
+    text-align: center;
+}
+
+    .stamp span:first-child {
+        font-size: 2em;
+    }
+
+.stamp-approved {
+    border-color: hsl(150, 90%, 30%);
+    color: hsl(150, 90%, 30%);
+    background-color: hsla(150, 90%, 90%);
+    box-shadow: 1px 1px 1px hsl(150, 90%, 20%);
+}
+
 .mapper {
     background-image: url("/assets/images/maps/usa.PNG");
     background-size: contain;
@@ -152,12 +197,26 @@ a, .btn-link {
     background-color: hsl(0 80% 60%);
 }
 
+.history-table {
+    font-size: .7em;
+}
+
 .history-table thead tr {
     background-color: rgb(40,40,40);
     color: white;
 }
 
+.history-table tbody tr:nth-child(2n+1) {
+    background-color: #ddd;
+}
+
 .history-table th {
     padding: 0 1em;
     text-align: center;
+}
+
+.history-table .history-change {
+    border: 1px solid #ccc;
+    padding: .2em;
+    margin: .2em 0;
 }

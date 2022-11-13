@@ -1,0 +1,13 @@
+﻿
+<div class="metric-tile">
+    <span>@(Value?.ToString() ?? "-")</span>    
+    <span>@Title</span>
+</div>
+
+@code {
+    [Parameter]
+    public int? Value { get; set; }
+
+    [Parameter]
+    public string? Title { get; set; }
+}

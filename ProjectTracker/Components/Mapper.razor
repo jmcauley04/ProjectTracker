@@ -9,9 +9,13 @@
 
 @code {
     [Parameter]
+    public bool Disabled { get; set; }
+
+    [Parameter]
     public PunchlistEntry? Entry { get; set; }
 
     void OnMouseUp(MouseEventArgs e){
+        if (Disabled) return;
         if(Entry is null) return;
         Entry.X = e.OffsetX - 5;
         Entry.Y = e.OffsetY - 5;

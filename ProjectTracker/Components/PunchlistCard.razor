@@ -2,8 +2,10 @@
 @using ProjectTracker.Shared.Models.Abstractions
 @inject PunchlistService PunchlistService
 @inject OptionsService OptionsService
+@inject PunchlistController PunchlistController
+@inject UserService UserService
 
-<div class="punchlist-card" style="border-top: 3px solid @Entry?.Priority.GetColor(_priorities);">
+<div class="punchlist-card position-relative" style="border-top: 3px solid @Entry?.Priority.GetColor(_priorities);">
     @if (Entry is null)
     {
         <h3>Loading...</h3>
@@ -12,61 +14,63 @@
     {
         <div class="d-grid">
             <div class="d-flex align-items-center m-2 gap-5">
-                @if(Entry.Id == 0)
-                {
-                    <input class="flex-grow-1 px-2" @bind-value="Entry.Name" placeholder="Title" />
-                }
-                else
-                {                    
-                    <h5 class="flex-grow-1">@Entry.Id @Entry.Name</h5>
-                }
+                <div class="flex-grow-1 d-flex gap-3 align-items-center">
+                    @if(Entry.Id != 0)
+                    {
+                        <h5>@Entry.Id</h5>
+                    }
+                    else{
+                        <h5>-</h5>
+                    }
+                    <input class="flex-grow-1 px-2" @bind-value="Entry.Name" placeholder="Title" disabled="@Disabled" />
+                </div>
                 <h6 class="text-muted">@Entry.Created.ToString("MMM d yyyy")</h6>
             </div>
-            <div class="d-flex gap-4 bg-light p-3 py-4 options-pane justify-content-around" style="font-size: .8em;">
+            <div class="d-flex gap-4 p-3 py-4 options-pane justify-content-around banner" style="font-size: .8em;">
                 <label>
                     Priority
-                    <select style="background-color: @Entry?.Priority.GetColor(_priorities)" @onchange="(a) => SetState(a, _priorities, SetPriority)">
+                    <select style="background-color: @Entry?.Priority.GetColor(_priorities)" @onchange="(a) => SetState(a, _priorities, SetPriority)" disabled="@Disabled">
                         @if(_priorities is not null)
                         {                            
                             @foreach(var priority in _priorities)
                             {
-                                <option value="@priority.Id" selected="@(priority.Id == Entry.PriorityId)">@priority.Name</option>
+                                <option value="@priority.Id" selected="@(priority.Id == Entry!.PriorityId)">@priority.Name</option>
                             }
                         }
                     </select>
                 </label>
                 <label>
                     Owner
-                    <select style="background-color: @Entry?.Owner.GetColor(_owners)" @onchange="(a) => SetState(a, _owners, SetOwner)">
+                    <select style="background-color: @Entry?.Owner.GetColor(_owners)" @onchange="(a) => SetState(a, _owners, SetOwner)" disabled="@Disabled">
                         @if (_owners is not null)
                         {
                             @foreach (var owner in _owners)
                             {
-                                <option value="@owner.Id" selected="@(owner.Id == Entry.OwnerId)">@owner.Name</option>
+                                <option value="@owner.Id" selected="@(owner.Id == Entry!.OwnerId)">@owner.Name</option>
                             }
                         }
                     </select>
                 </label>
                 <label>
                     Flag
-                    <select style="background-color: @Entry?.Flag.GetColor(_flags)" @onchange="(a) => SetState(a, _flags, SetFlag)">
+                    <select style="background-color: @Entry?.Flag.GetColor(_flags)" @onchange="(a) => SetState(a, _flags, SetFlag)" disabled="@Disabled">
                         @if (_flags is not null)
                         {
                             @foreach (var flag in _flags)
                             {
-                                <option value="@flag.Id" selected="@(flag.Id == Entry.FlagId)">@flag.Name</option>
+                                <option value="@flag.Id" selected="@(flag.Id == Entry!.FlagId)">@flag.Name</option>
                             }
                         }
                     </select>
                 </label>
                 <label>
                     Status
-                    <select style="background-color: @Entry?.Status.GetColor(_statuses);" @onchange="(a) => SetState(a, _statuses, SetStatus)">
+                    <select style="background-color: @Entry?.Status.GetColor(_statuses);" @onchange="(a) => SetState(a, _statuses, SetStatus)" disabled="@Disabled">
                         @if (_statuses is not null)
                         {
                             @foreach (var status in _statuses)
                             {
-                                <option value="@status.Id" selected="@(status.Id == Entry.StatusId)">@status.Name</option>
+                                <option value="@status.Id" selected="@(status.Id == Entry!.StatusId)">@status.Name</option>
                             }
                         }
                     </select>
@@ -81,55 +85,59 @@
             <div class="d-grid pb-3 px-3 pt-1">
                 @switch(_tab){
                     case Tab.Issue:
-                        <TextAndImage @bind-Text="Entry.Description" @bind-Image="Entry.BeforeImage" Filename="@($"{Entry.Id}_Issue")" />
+                        <TextAndImage @bind-Text="Entry!.Description" @bind-Image="Entry!.BeforeImage" Disabled="@Disabled" />
                         break;
                     case Tab.Resolution:
-                        <TextAndImage @bind-Text="Entry.Resolution" @bind-Image="Entry.AfterImage" Filename="@($"{Entry.Id}_Resolution")" />
+                        <TextAndImage @bind-Text="Entry!.Resolution" @bind-Image="Entry!.AfterImage" Disabled="@Disabled" />
+                        break;
+                    case Tab.Discussion:
+                        <CommentsList RelationId="Entry?.Id" RelationTypeId="_punchlistRelation?.Id" Disabled="@Disabled" />
                         break;
                     case Tab.Map:
-                        <Mapper Entry="@Entry" />
+                        <Mapper Entry="@Entry" Disabled="@Disabled" />
                         break;
 
                     case Tab.History:
-                        <History />
+                        <History RelationId="Entry?.Id" RelationTypeId="_punchlistRelation?.Id" />
                         break;
                 }
             </div>
-            <div class="p-3">
-                <div class="d-flex justify-content-between">
-                    <strong>Discussion</strong>
-                    <button class="btn btn-secondary">Save</button>
-                </div>
-                <hr class="my-2" />
-                <div class="d-flex gap-2">
-                    <span class="m-2">M</span>
-                    <textarea class="flex-grow-1 p-2" placeholder="Add a comment to this item"></textarea>
-                </div>
-                @foreach (var comment in _comments)
+            <div class="m-3 d-flex gap-4 align-items-center">
+                <button class="btn btn-outline-dark" style="width: 200px;" @onclick="Save" disabled="@Disabled">Save</button>
+                @if(Entry?.ApprovedBy is null)
                 {
-                    <div class="d-grid justify-content-end">
-                        <span class="text-muted">@comment.Created.ToShortDateString()</span>
-                        <div class="d-flex gap-2">
-                            <span class="m-2">@comment.User</span>
-                            <textarea class="flex-grow-1 p-2" readonly placeholder="@comment.Text"></textarea>
-                        </div>
-                    </div>
+                    <button class="btn btn-outline-success" style="width: 200px;" @onclick="Approve">Approve</button>
                 }
+                else
+                {
+                    <button class="btn btn-outline-danger" style="width: 200px;" @onclick="Unapprove">Unapprove</button>
+                }
+                <div class="stamp-wrapper">
+                    @if (Entry?.ApprovedBy is not null)
+                    {
+                        <ProjectTracker.Fragments.StampApproved BigText="Approved" SmallText="@Entry?.ApprovedBy" />
+                    }
+                </div>
             </div>
         </div>
     }
 </div>
 
 @code {
+    RelationType? _punchlistRelation;
+    PunchlistEntry? _originalEntry;
     IEnumerable<PunchlistPriority>? _priorities;
     IEnumerable<PunchlistStatus>? _statuses;
     IEnumerable<PunchlistFlag>? _flags;
     IEnumerable<PunchlistOwner>? _owners;
-    List<Comment> _comments = new();
+    bool Disabled => _loading || Entry?.ApprovedBy is not null;
+    bool _loading = true;
+    bool EntryUnsaved => Entry is null || Entry.Id == 0;
 
     enum Tab {
         Issue,
         Resolution,
+        Discussion,
         Map,
         History
     }
@@ -139,12 +147,33 @@
     [Parameter]
     public PunchlistEntry? Entry { get; set; }
 
+    [Parameter]
+    public EventCallback<PunchlistEntry> EntryChanged { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (Entry is null)
+        {
+            _originalEntry = null;
+            return;
+        }
+
+        UpdateOriginal(Entry);
+    }
+
+    void UpdateOriginal(PunchlistEntry entry)
+    { 
+        _originalEntry = entry.Clone();
+    }
+
     protected override async Task OnInitializedAsync()
     {
+        _punchlistRelation = await OptionsService.GetRelation(ProjectTracker.Shared.Constants.RelationTypes.Punchlist);
         _priorities = await OptionsService.GetPriorities();
         _statuses = await OptionsService.GetStatuses();
         _flags = await OptionsService.GetFlags();
         _owners = await OptionsService.GetOwners();
+        _loading = false;
     }
 
     void SetState<T>(ChangeEventArgs args, IEnumerable<T>? items, Action<T?> setter) 
@@ -181,5 +210,45 @@
         if (Entry is null) return;
         Entry.FlagId = state?.Id ?? 0;
         Entry.Flag = state;
+    }
+
+    async Task Save()
+    {
+        try
+        {
+            _loading = true;
+            if (Entry is null) return;
+            Entry = await PunchlistController.Save(Entry, _originalEntry!);
+            //UpdateOriginal(Entry);
+            await EntryChanged.InvokeAsync(Entry);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    async Task Approve() => await ToggleApprove(true);
+
+    async Task Unapprove() => await ToggleApprove(false);
+
+    async Task ToggleApprove(bool approving)
+    {
+        try
+        {
+            _loading = true;
+            if (Entry is null) return;
+
+            if (approving)
+                Entry.ApprovedBy = await UserService.GetUsername();
+            else
+                Entry.ApprovedBy = null;
+
+            await Save();
+        }
+        finally
+        {
+            _loading = false;
+        }
     }
 }

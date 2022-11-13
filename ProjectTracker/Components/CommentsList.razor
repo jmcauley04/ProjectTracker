@@ -1,0 +1,56 @@
+﻿@inject CommentService CommentService
+@inject UserService UserService
+
+<div>
+    <hr class="my-2" />
+    <div class="d-grid gap-3 mx-4 my-2 small">
+        @foreach (var comment in _comments)
+        {
+            <div class="d-grid">
+                <div class="d-flex align-items-end justify-content-between gap-2">
+                    <strong>@comment.User</strong>
+                    <span class="text-muted">@comment.Created.ToUniversalTime().ToLocalTime()</span>
+                </div>
+                <p class="flex-grow-1 p-2" style="border: 1px solid #ccc; border-radius: 5px;">@comment.Text</p>
+            </div>
+        }
+    </div>
+    <div class="d-flex gap-2">
+        <textarea value="@_comment" class="flex-grow-1 p-2" placeholder="Add a comment to this item" @onchange="(a) => _comment = a.Value?.ToString() ?? string.Empty"></textarea>
+        <button disabled="@_isDisabled" class="btn btn-outline-success" @onclick="AddComment">Add Comment</button>
+    </div>
+</div>
+
+@code {
+    List<Comment> _comments = new();
+    string _comment = string.Empty;
+    bool _isDisabled => Disabled || (RelationId ?? 0) == 0 || (RelationTypeId ?? 0) == 0;
+
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    [Parameter]
+    public int? RelationTypeId { get; set; }
+
+    [Parameter]
+    public int? RelationId { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (RelationId is null || RelationTypeId is null)
+            return;
+
+        _comments = await CommentService.GetSome(x => x.RelationTypeId == RelationTypeId && x.RelationId == RelationId);
+    }
+
+    async Task AddComment()
+    {
+        if (RelationId is null || RelationTypeId is null)
+            return;
+
+        var user = await UserService.GetUsername();
+        var comment = await CommentService.AddComment(_comment, RelationTypeId.Value, RelationId.Value, user);
+        _comments.Add(comment);
+        _comment = string.Empty;
+    }
+}

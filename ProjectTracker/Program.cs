@@ -1,5 +1,8 @@
+global using ProjectTracker.Controllers;
+global using ProjectTracker.DataAccess;
+global using ProjectTracker.Services;
 using Microsoft.Extensions.FileProviders;
-using ProjectTracker.DataAccess;
+using ProjectTracker.Shared;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,6 +11,7 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 
 builder.Services.AddDataAccess(builder.Configuration);
+builder.Services.AddClientServices();
 
 var app = builder.Build();
 

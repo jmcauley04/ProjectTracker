@@ -1,26 +1,40 @@
-﻿<div class="d-grid">
+﻿@inject HistoryLogService HistoryLogService
+
+<div class="d-grid">
     <hr class="my-2" />
     <table class="history-table">
         <thead>
             <tr>
                 <th>User</th>
                 <th>Timestamp</th>
-                <th>Description</th>
-                <th>Old</th>
-                <th>New</th>
+                <th>Changes</th>
             </tr>
         </thead>
         <tbody>
-            @if (Logs is not null)
+            @if (_logsDictionary is not null)
             {
-                @foreach (var log in Logs)
+                @foreach (var log in _logsDictionary)
                 {
                     <tr>
-                        <td>@log.User</td>
-                        <td>@log.Timestamp</td>
-                        <td>@log.Description</td>
-                        <td>@log.Old</td>
-                        <td>@log.New</td>
+                        <td width="200px" align="center">@log.Value.First().User</td>
+                        <td width="200px" align="center">@log.Key</td>
+                        <td>
+                            <ul>
+                                @foreach(var val in log.Value)
+                                {
+                                    <li>
+                                        <div class="d-grid history-change">
+                                            <strong>@val.Description</strong>
+                                            @if (!string.IsNullOrEmpty(val.Old) || !string.IsNullOrEmpty(val.New))
+                                            {
+                                                <div class="mx-2"><strong>From: </strong>@val.Old</div>
+                                                <div class="mx-2" style="padding-left: 1.4em;"><strong>To: </strong>@val.New</div>
+                                            }
+                                        </div>                                    
+                                    </li>
+                                }
+                            </ul>
+                        </td>
                     </tr>
                 }
             }            
@@ -29,6 +43,29 @@
 </div>
 
 @code {
+    IEnumerable<HistoryLog>? _logs;
+
+    Dictionary<DateTime, IEnumerable<HistoryLog>>? _logsDictionary => _logs?
+        .GroupBy(x => x.Timestamp)
+        .ToDictionary(x => x.Key, x => x.AsEnumerable());
+
     [Parameter]
-    public IEnumerable<HistoryLog>? Logs { get; set; }
+    public int? RelationId { get; set; }
+
+    [Parameter]
+    public int? RelationTypeId { get; set; }
+
+    string GetTitle(HistoryLog log){
+        var oldValue = string.IsNullOrEmpty(log.Old) ? "<Empty>" : log.Old;
+        var newValue = string.IsNullOrEmpty(log.New) ? "<Empty>" : log.New;
+        return $"From: {oldValue} \n     To: {newValue}";
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (RelationId is null || RelationTypeId is null)
+            return;
+
+        _logs = await HistoryLogService.GetSome(x => x.RelationId == RelationId && x.RelationTypeId == RelationTypeId);
+    }
 }

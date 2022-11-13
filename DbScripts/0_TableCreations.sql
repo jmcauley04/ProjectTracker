@@ -1,4 +1,7 @@
 USE [ProjectTracker]
+
+
+
 GO
 IF OBJECT_ID('dbo.[PunchlistEntries]') IS NOT NULL DROP TABLE dbo.PunchlistEntries;
 IF OBJECT_ID('dbo.[TaskEntries]') IS NOT NULL DROP TABLE dbo.TaskEntries;
@@ -136,6 +139,7 @@ CREATE TABLE [dbo].[PunchlistEntries] (
 	[FlagId] [int] NOT NULL,
 	[Created] [datetime2] NOT NULL DEFAULT GETDATE(),
 	[Due] [datetime2] NULL,
+	[ApprovedBy] [nvarchar](200) NULL,
 	[X] float NULL,
 	[Y] float NULL,
 	CONSTRAINT FK_PunchlistEntries_PunchlistPriorities FOREIGN KEY (PriorityId) REFERENCES dbo.PunchlistPriorities (Id),
@@ -162,6 +166,7 @@ CREATE TABLE [dbo].[Comments] (
 	[Id] [int] IDENTITY(1,1) PRIMARY KEY NOT NULL,
 	[RelationTypeId] [int] NOT NULL,
 	[RelationId] [int] NOT NULL,
+	[User] [nvarchar](200) NOT NULL,
 	[Text] [nvarchar](max) NOT NULL,
 	[Created] [datetime2] NOT NULL DEFAULT GETDATE(),
 	CONSTRAINT FK_Comments_RelationTypes FOREIGN KEY (RelationTypeId) REFERENCES dbo.RelationTypes (Id),
@@ -171,12 +176,12 @@ CREATE TABLE [dbo].[HistoryLogs] (
 	[Id] [int] IDENTITY(1,1) PRIMARY KEY NOT NULL,
 	[RelationTypeId] [int] NOT NULL,
 	[RelationId] [int] NOT NULL,
-	[UserId] [int] NOT NULL,
+	[User] [nvarchar](200) NOT NULL,
 	[Timestamp] [datetime2] NOT NULL DEFAULT GETDATE(),
 	[Description] [nvarchar](1000) NOT NULL,
 	[Old] [nvarchar](1000) NOT NULL,
 	[New] [nvarchar](1000) NOT NULL,
-	CONSTRAINT FK_Comments_HistoryLogs FOREIGN KEY (RelationTypeId) REFERENCES dbo.RelationTypes (Id),
+	CONSTRAINT FK_HistoryLogs_RelationTypes FOREIGN KEY (RelationTypeId) REFERENCES dbo.RelationTypes (Id),
 )
 
 GO

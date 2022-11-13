@@ -1,8 +1,10 @@
 ﻿@page "/punchlist"
+@inject PunchlistController PunchlistController
 
 <div class="d-flex justify-content-between mb-4">
     <h3>Punchlist</h3>
-    <ProjectTracker.Components.Charts.BarChart Data="_entriesSummary" MaxValue="GetMaxValue()" />
+    <ProjectTracker.Components.MetricTile Title="Not approved" Value="@_entries?.Count(x => x.ApprovedBy is null)" />
+    <ProjectTracker.Components.Charts.BarChart Data="_entriesSummary" MaxValue="_maxValue" />
 </div>
 <div class="d-grid gap-4 align-items-start">
     @if(_entries is null){
@@ -11,19 +13,17 @@
     else {
         foreach (var entry in _entries)
         {
-            <ProjectTracker.Components.PunchlistCard Entry="@entry" />
+            <ProjectTracker.Components.PunchlistCard Entry="entry" EntryChanged="OnEntryChanged" />
+            <hr />
         }
     }
-    <button class="btn btn-secondary" @onclick="AddEntry">Add Punchlist Item</button>
+    <button class="btn btn-secondary mb-4" @onclick="AddEntry">Add Punchlist Item</button>
 </div>
 
 @code {
     List<PunchlistEntry>? _entries;
-
-    Dictionary<string, int>? _entriesSummary => _entries?
-        .Where(x => x.Id != 0)
-        .GroupBy(x => x.StatusId)
-        .ToDictionary(x => x.Key.ToString(), x => x.Count());
+    Dictionary<string, int>? _entriesSummary;
+    int _maxValue;
 
     int GetMaxValue(){
         if ((_entriesSummary?.Count ?? 0) == 0)
@@ -31,24 +31,10 @@
         return _entriesSummary?.Max(x => x.Value) ?? 0;
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        var entries = new List<PunchlistEntry>();
-
-        for(int i = 1; i < 20; i++){
-            var entry = new PunchlistEntry()
-                {
-                    Name = $"Entry {i}",
-                    Description = "This is the description of the issue.  It needs to be fixed and this is vague",
-                    Id = i,
-                    Resolution = i % 3 == 0 ? "This is the resolution of this object and it has one" : string.Empty,
-                    PriorityId = Random.Shared.Next(0, 4),
-                    StatusId = Random.Shared.Next(0, 3),
-                    Created = DateTime.Today.AddDays(-1 * Random.Shared.Next(0, 200)),
-                };
-        }
-
-        _entries = entries;
+        _entries = await PunchlistController.GetPunchlist();
+        CalculateSummary();
     }
 
     void AddEntry()
@@ -56,4 +42,30 @@
         if (_entries is null) return;
         _entries.Add(new PunchlistEntry());
     }
+
+    void OnEntryChanged(PunchlistEntry entity){        
+        CalculateSummary();
+    }
+
+    void CalculateSummary()
+    {
+        if (_entries is null) return;
+        var dict = new Dictionary<string, int>();
+        foreach(var entry in _entries){
+            if (!string.IsNullOrEmpty(entry.ApprovedBy))
+                continue;
+
+            var key = entry.Status?.Name ?? "NA";
+            if(dict.ContainsKey(key))
+                dict[key] ++;
+            else
+                dict[key] = 1;
+        }
+        _entriesSummary = dict;
+
+        if ((_entriesSummary?.Count ?? 0) == 0)
+            _maxValue = 0;
+        else
+            _maxValue = _entriesSummary?.Max(x => x.Value) ?? 0;
+    }    
 }
