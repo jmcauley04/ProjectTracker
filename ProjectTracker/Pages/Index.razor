@@ -1,22 +1,26 @@
 ﻿@page "/"
 @using ProjectTracker.DataAccess.Services
+@inject OverviewController OverviewController
 
-<PageTitle>Index</PageTitle>
+<PageTitle>Project Tracker - Overview</PageTitle>
 
 <h1 class="mb-5">Ambient Symbotic Integration</h1>
 
-<h3 class="my-4">Date Tracking</h3>
+<div class="d-flex my-4 gap-4">
+    <h3>Date Tracking</h3>
+    <button class="btn btn-primary">Add</button>
+</div>
 
 <div class="d-flex flex-wrap project-events-wrapper">
     @if(_events is not null){
-        foreach(var  projectEvent in _events.OrderBy(x => x.CurrentDate))
+        foreach(var  projectEvent in _events.OrderBy(x => x.TargetDate))
         {
-            <div class="d-grid project-event" style="background-color: hsl(@((projectEvent.CurrentDate.Month - 7) * -30), 80%, 95%)">
-                <h5 class="text-center">@projectEvent.Title</h5>
-                <h1 class="text-center">@(projectEvent.CurrentDate.ToString("MMM d"))</h1>
+            <div class="d-grid project-event" style="background-color: hsl(@((projectEvent.TargetDate.Month - 7) * -30), 80%, 95%)">
+                <h5 class="text-center">@projectEvent.Name</h5>
+                <h1 class="text-center">@(projectEvent.TargetDate.ToString("MMM d"))</h1>
                 <div class="d-flex justify-content-between text-muted">                
                     <h6 class="d-grid">
-                        <span>@(Math.Abs((projectEvent.CurrentDate - DateTime.Today).TotalDays)) @(projectEvent.CurrentDate >= DateTime.Today ? "days till" : "days late")</span>
+                        <span>@(Math.Abs((projectEvent.TargetDate - DateTime.Today).TotalDays)) @(projectEvent.TargetDate >= DateTime.Today ? "days till" : "days late")</span>
                     </h6>
                     <h6 class="d-grid">
                         <span>originally: @projectEvent.OriginalDate.ToString("MMM d")</span>
@@ -34,17 +38,10 @@
 <h3 class="my-4">Tasks Summary</h3>
 
 @code{
-    public record ProjectEvent(string Title, DateTime OriginalDate, DateTime CurrentDate);
-
     IEnumerable<ProjectEvent>? _events;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        _events = new ProjectEvent[]
-        {
-            new ProjectEvent("End of Install", new DateTime(2022, 10, 28), new DateTime(2022, 10, 28)),
-            new ProjectEvent("Functional Testing", new DateTime(2022, 11, 7), new DateTime(2022, 11, 21)),
-            new ProjectEvent("Go-Live", new DateTime(2022, 11, 21), new DateTime(2022, 12, 5)),
-        };
+        _events = await OverviewController.GetEvents();
     }
 }

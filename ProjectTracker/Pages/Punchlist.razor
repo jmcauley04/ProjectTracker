@@ -1,6 +1,8 @@
 ﻿@page "/punchlist"
 @inject PunchlistController PunchlistController
 
+<PageTitle>Project Tracker - Punchlist</PageTitle>
+
 <div class="d-flex justify-content-between mb-4">
     <h3>Punchlist</h3>
     <ProjectTracker.Components.MetricTile Title="Not approved" Value="@_entries?.Count(x => x.ApprovedBy is null)" />

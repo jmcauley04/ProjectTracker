@@ -28,6 +28,10 @@ public class ProjectTrackerContext : DbContext
     internal DbSet<RelationType> RelationTypes { get; set; }
     #endregion
 
+    #region ProjectEvents
+    internal DbSet<ProjectEvent> ProjectEvents { get; set; }
+    #endregion
+
     public ProjectTrackerContext(DbContextOptions<ProjectTrackerContext> options) : base(options)
     {
 

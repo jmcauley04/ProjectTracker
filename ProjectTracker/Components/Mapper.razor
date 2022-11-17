@@ -1,10 +1,13 @@
 ﻿
 <hr class="my-2" />
-<div class="mapper position-relative" @onmouseup="OnMouseUp">
-    @if (Entry is not null && Entry.X > 0 && Entry.Y > 0)
-    {
-        <div class="mapper-point position-absolute" style="top: @(Entry.Y)px; left: @(Entry.X)px;"></div>
-    }
+<div class="d-grid justify-content-center">
+    <div @onmouseup="OnMouseUp" class="position-relative">
+        <img src="/assets/images/maps/6010-map.PNG" class="mapper" />
+        @if (Entry is not null && Entry.X > 0 && Entry.Y > 0)
+        {
+            <div class="mapper-point position-absolute" style="top: @(Entry.Y)px; left: @(Entry.X)px;"></div>
+        }
+    </div>
 </div>
 
 @code {

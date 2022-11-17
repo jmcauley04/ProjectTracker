@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ProjectTracker.DataAccess.Contexts;
-using ProjectTracker.DataAccess.Services;
+using ProjectTracker.Shared.Extensions;
 
 namespace ProjectTracker.DataAccess;
 
@@ -23,11 +23,7 @@ public static class IServiceCollectionInjector
         services.AddDbContextFactory<ProjectTrackerContext>(lifetime: ServiceLifetime.Scoped);
         services.AddMemoryCache();
 
-        services.AddScoped<TaskService>();
-        services.AddScoped<PunchlistService>();
-        services.AddScoped<OptionsService>();
-        services.AddScoped<HistoryLogService>();
-        services.AddScoped<CommentService>();
+        services.AddAttributedProjectServices();
 
         return services;
     }

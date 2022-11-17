@@ -3,7 +3,7 @@
 public class PunchlistEntry
 {
     public int Id { get; set; }
-    public string Name { get; set; }
+    public string Name { get; set; } = string.Empty;
     public DateTime Created { get; set; } = DateTime.Now;
     public DateTime Due { get; set; }
     public int StatusId { get; set; } = 1;
@@ -14,7 +14,7 @@ public class PunchlistEntry
     public PunchlistFlag? Flag { get; set; }
     public int PriorityId { get; set; } = 1;
     public PunchlistPriority? Priority { get; set; }
-    public string Description { get; set; }
+    public string Description { get; set; } = string.Empty;
     public string? Resolution { get; set; }
     public string? BeforeImage { get; set; }
     public string? AfterImage { get; set; }

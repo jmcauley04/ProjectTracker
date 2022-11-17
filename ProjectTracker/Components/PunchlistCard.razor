@@ -13,7 +13,7 @@
     else
     {
         <div class="d-grid">
-            <div class="d-flex align-items-center m-2 gap-5">
+            <div class="d-flex align-items-center m-2 gap-5 flex-wrap">
                 <div class="flex-grow-1 d-flex gap-3 align-items-center">
                     @if(Entry.Id != 0)
                     {
@@ -26,7 +26,7 @@
                 </div>
                 <h6 class="text-muted">@Entry.Created.ToString("MMM d yyyy")</h6>
             </div>
-            <div class="d-flex gap-4 p-3 py-4 options-pane justify-content-around banner" style="font-size: .8em;">
+            <div class="options-pane banner">
                 <label>
                     Priority
                     <select style="background-color: @Entry?.Priority.GetColor(_priorities)" @onchange="(a) => SetState(a, _priorities, SetPriority)" disabled="@Disabled">
@@ -76,7 +76,7 @@
                     </select>
                 </label>
             </div>
-            <div class="d-flex gap-5 px-3 mt-2">
+            <div class="punchlist-tabs">
                 @foreach (var tab in Enum.GetValues<Tab>())
                 {
                     <strong @onclick="() => _tab = tab" class="@(tab == _tab ? "link-like selected" : "link-like text-muted")">@tab</strong>
@@ -102,15 +102,15 @@
                         break;
                 }
             </div>
-            <div class="m-3 d-flex gap-4 align-items-center">
+            <div class="buttons-pane">
                 <button class="btn btn-outline-dark" style="width: 200px;" @onclick="Save" disabled="@Disabled">Save</button>
                 @if(Entry?.ApprovedBy is null)
                 {
-                    <button class="btn btn-outline-success" style="width: 200px;" @onclick="Approve">Approve</button>
+                    <button class="btn btn-outline-success" style="width: 200px;" @onclick="Approve" disabled="@(Disabled || EntryUnsaved)">Approve</button>
                 }
                 else
                 {
-                    <button class="btn btn-outline-danger" style="width: 200px;" @onclick="Unapprove">Unapprove</button>
+                    <button class="btn btn-outline-danger" style="width: 200px;" @onclick="Unapprove" disabled="@(Disabled || EntryUnsaved)">Unapprove</button>
                 }
                 <div class="stamp-wrapper">
                     @if (Entry?.ApprovedBy is not null)
@@ -169,10 +169,10 @@
     protected override async Task OnInitializedAsync()
     {
         _punchlistRelation = await OptionsService.GetRelation(ProjectTracker.Shared.Constants.RelationTypes.Punchlist);
-        _priorities = await OptionsService.GetPriorities();
-        _statuses = await OptionsService.GetStatuses();
-        _flags = await OptionsService.GetFlags();
-        _owners = await OptionsService.GetOwners();
+        _priorities = await OptionsService.GetPunchlistPriorities();
+        _statuses = await OptionsService.GetPunchlistStatuses();
+        _flags = await OptionsService.GetPunchlistFlags();
+        _owners = await OptionsService.GetPunchlistOwners();
         _loading = false;
     }
 

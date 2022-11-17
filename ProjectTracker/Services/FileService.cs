@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Components.Forms;
+using ProjectTracker.Shared.Attributes;
 
 namespace ProjectTracker.Services;
 
+[InjectService(InjectServiceAttribute.ServiceLifetime.Singleton)]
 public class FileService
 {
     const int _maxWidth = 480;

@@ -1,8 +1,144 @@
 ﻿@page "/tasks"
+@inject TasksController TasksController
 
-<h3>Issue Tracker</h3>
+<PageTitle>Project Tracker - Tasks</PageTitle>
 
-<ProjectTracker.Components.TaskBoard />
+<div class="d-flex justify-content-between">
+    <h3>Tasks</h3>
+    <button @onclick="OnAddEntry" class="btn btn-secondary">Add</button>
+</div>
+
+<div class="mt-4">
+    @if (_tasks is null)
+    {
+            <h5>Loading...</h5>
+    }
+    else
+    {
+            <div class="d-grid gap-4">
+                <div>
+                    <TaskTable Title="All Tasks" Tasks="@_tasks" OnTaskClicked="TaskClicked" />
+                </div>
+            </div>
+    }
+</div>
+
+@if(_selectedTask is not null)
+{
+    <AddEditModal @bind-IsOpen="_isOpen" OnSave="SaveTask">
+        <ModalHeader>
+            @if (_selectedTask.Id == 0)
+            {
+                    <div>Add Task</div>
+            }
+            else
+            {
+                    <div>Edit Task @_selectedTask.Id</div>
+            }
+        </ModalHeader>
+        <ModalBody>
+            <div class="d-grid gap-3">
+                <label class="d-grid">
+                    <strong>Created</strong>
+                    <input type="date" @bind-value="_selectedTask.Created" disabled />
+                </label>
+                <label class="d-grid">
+                    <strong>Name</strong>
+                    <input @bind-value="@_selectedTask.Name" />
+                </label>
+                <label class="d-grid">
+                    <strong>Status</strong>
+                    <select @onchange="SetStatus">
+                        @if(_statuses is not null)
+                        {
+                            foreach(var opt in _statuses)
+                            {
+                                <option value="@opt.Id" selected="@(opt.Id == _selectedTask.StatusId)">@opt.Name</option>
+                            }
+                        }
+                    </select>
+                </label>
+                <label class="d-grid">
+                    <strong>Priority</strong>
+                    <select @onchange="SetPriority">
+                        @if (_priorities is not null)
+                        {
+                            foreach (var opt in _priorities)
+                            {
+                                <option value="@opt.Id" selected="@(opt.Id == _selectedTask.PriorityId)">@opt.Name</option>
+                            }
+                        }
+                    </select>
+                </label>
+                <label class="d-grid">
+                    <strong>Due</strong>
+                    <input type="date" @bind-value="_selectedTask.Due" />
+                </label>
+            </div>
+        </ModalBody>
+    </AddEditModal>
+}
 
 @code {
+    IEnumerable<Shared.Models.TaskBoard.TaskStatus>? _statuses;
+    IEnumerable<Shared.Models.TaskBoard.TaskPriority>? _priorities;
+    List<TaskEntry>? _tasks;
+    bool _isOpen;
+    TaskEntry? _selectedTask;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _tasks = await TasksController.GetTasks();
+        _statuses = await TasksController.GetStatuses();
+        _priorities = await TasksController.GetPriorities();
+    }
+
+    async Task OnAddEntry()
+    {
+        if (_statuses is null) return;
+
+        _selectedTask = new();
+        _isOpen = true;
+        await Task.CompletedTask;
+    }
+
+    async Task SetStatus(ChangeEventArgs a)
+    {
+        if (_selectedTask is null || _statuses is null) return;
+        var status = _statuses.First(x => x.Id == a.Value.AsInt());
+        _selectedTask.StatusId = status.Id;
+        _selectedTask.Status = status;
+        await Task.CompletedTask;
+    }
+
+    async Task SetPriority(ChangeEventArgs a)
+    {
+        if (_selectedTask is null || _priorities is null) return;
+        var priority = _priorities.First(x => x.Id == a.Value.AsInt());
+        _selectedTask.PriorityId = priority.Id;
+        _selectedTask.Priority = priority;
+        await Task.CompletedTask;
+    }
+
+    async Task SaveTask()
+    {
+        if (_selectedTask is null || _tasks is null) return;
+        var savedTask = await TasksController.SaveTask(_selectedTask.Clone());
+        var existing = _tasks.SingleOrDefault(x => x.Id == savedTask.Id);
+        if (existing is null)
+            _tasks.Add(savedTask);
+        else
+        {
+            foreach (var prop in existing.GetType().GetProperties())
+                prop.SetValue(existing, prop.GetValue(savedTask));
+        }
+        _selectedTask = null;
+    }
+
+    async Task TaskClicked(TaskEntry entry)
+    {
+        _selectedTask = entry.Clone();
+        _isOpen = true;
+        await Task.CompletedTask;
+    }
 }

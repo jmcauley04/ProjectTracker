@@ -1,0 +1,13 @@
+﻿
+img,
+.no-image {
+    height: 300px;
+    background-color: #eee;
+}
+
+.no-image {
+    aspect-ratio: 3/3;
+    display: grid;
+    place-content: center;
+    color: #999;
+}

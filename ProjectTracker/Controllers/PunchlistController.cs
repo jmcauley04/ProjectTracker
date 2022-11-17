@@ -1,4 +1,5 @@
 ﻿using ProjectTracker.DataAccess.Services;
+using ProjectTracker.Shared.Attributes;
 using ProjectTracker.Shared.Constants;
 using ProjectTracker.Shared.Extensions;
 using ProjectTracker.Shared.Models;
@@ -6,6 +7,7 @@ using ProjectTracker.Shared.Models.Punchlist;
 
 namespace ProjectTracker.Controllers;
 
+[InjectService(InjectServiceAttribute.ServiceLifetime.Scoped)]
 public class PunchlistController
 {
     private readonly PunchlistService _punchlistService;

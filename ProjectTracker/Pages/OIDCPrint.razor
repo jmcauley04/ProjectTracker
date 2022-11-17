@@ -1,0 +1,57 @@
+﻿@page "/oidc-print"
+@attribute [Authorize]
+
+<PageTitle>Project Tracker - oidc</PageTitle>
+
+<AuthorizeView>
+    <NotAuthorized>
+        <h1>Log in to see OIDC print out</h1>
+    </NotAuthorized>
+    <Authorized>
+        <h3>Properties</h3>
+        <div class="d-grid" style="font-size: .7em;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Property</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Name</td>
+                        <td>@context.User.Identity?.Name</td>
+                    </tr>
+                    <tr>
+                        <td>AuthenticationType</td>
+                        <td>@context.User.Identity?.AuthenticationType</td>
+                    </tr>
+                    <tr>
+                        <td>IsAuthenticated</td>
+                        <td>@context.User.Identity?.IsAuthenticated</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <h3 class="mt-4">Claims</h3>
+        <div class="d-grid" style="font-size: .7em;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var claim in context.User.Claims)
+                    {
+                            <tr>
+                                <td>@claim.Type</td>
+                                <td>@claim.Value</td>
+                            </tr>                        
+                    }
+                </tbody>
+            </table>
+        </div>
+    </Authorized>
+</AuthorizeView>
