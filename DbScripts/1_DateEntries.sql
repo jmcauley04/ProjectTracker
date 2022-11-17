@@ -1,4 +1,4 @@
-USE ProjectTracker;
+USE [db_a8fb43_projecttracker]
 GO
 
 IF OBJECT_ID('dbo.[ProjectEvents]') IS NOT NULL DROP TABLE dbo.ProjectEvents;
